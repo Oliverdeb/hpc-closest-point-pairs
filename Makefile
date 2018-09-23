@@ -1,12 +1,12 @@
 
 GCC=g++
-FLAGS=-std=c++11 -o main
+FLAGS=-std=c++14 -o main
 
 clean: 
-	@ [ -e main ] && rm main || echo 1;
+	@ [ -e main ] && rm main || echo 'could not rm';
 
 default: clean
 	$(GCC) $(FLAGS) *.cpp
 
 run: default
-	./main
+	./main -i inp.txt -o s

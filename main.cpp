@@ -4,6 +4,31 @@
 # include <vector>
 # include <fstream>
 # include <sstream>
+# include "string.h"
+
+void parse_csv(auto & set, auto & ibuff){
+    int i = 0;
+    while (ibuff >> i){
+        set.push_back(i);
+
+        if (ibuff.peek() == '-'){
+            ibuff.ignore();
+            int upper;
+            ibuff >> upper;
+            for (int j = i+1; j <= upper; ++j)
+                set.push_back(j);            
+        }
+
+        ibuff.ignore();
+    }
+}
+
+void output_vector(auto & vec){
+    std::cout << "\n\nVector output:" << std::endl;
+
+    for (auto & elem : vec)
+        std::cout << elem << std::endl;
+}
 
 
 int main(int argc, char *argv[])
@@ -18,7 +43,9 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    if (argv[1] == "-i"){
+    // std::cout < "wtf " << (strcmp(argv[1], "-i")) << std::endl;
+    if (strcmp(argv[1], "-i") == 0){
+
         i_file = argv[2];
         o_file = argv[4];
     }else{
@@ -29,50 +56,31 @@ int main(int argc, char *argv[])
     std::ifstream infile(i_file);
 
     if (!infile){
-        std::cerr << "cant open file" << std::endl;
+        std::cerr << "cant open file " << i_file <<  std::endl;
         exit(1);
     }
 
-    infile >> k;
-    
+    std::string dcdfile;
+    infile >> dcdfile >> k >> std::ws;
+    std::cout << "dcd is "<< dcdfile << std::endl;
+    std::cout << "k is "<< k << std::endl;
+
     std::string line;
     std::getline(infile, line);
     std::istringstream ibuff(line);
     
     parse_csv(setA, ibuff);
+    output_vector(setA);
 
-    line = "";
     std::getline(infile, line);
     ibuff = std::istringstream(line);
 
     parse_csv(setB, ibuff);
+    output_vector(setB);
     
 
     infile.close();
 
-
-
     
     return 0;
-}
-
-std::vector<int> parse_csv(std::vector<int> & set, std::istringstream & ibuff){
-    int i;
-    while (ibuff >> i){
-        set.push_back(i);
-        
-        if (ibuff.peek() == ','){
-            ibuff.ignore();
-            continue;
-        }
-
-        if (ibuff.peek() == '-'){
-            ibuff.ignore();
-            int upper;
-            ibuff >> upper;
-            for (int j = i+1; j <= upper; ++upper){
-                set.push_back(j);
-            }
-        }
-    }
 }
