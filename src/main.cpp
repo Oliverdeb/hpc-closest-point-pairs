@@ -5,6 +5,9 @@
 # include <fstream>
 # include <sstream>
 # include "string.h"
+# include "serial.h"
+# include "parallel_openmp.h"
+# include "parallel_mpi.h"
 
 void parse_csv(auto & set, auto & ibuff){
     int i = 0;
@@ -73,14 +76,18 @@ int main(int argc, char *argv[])
     output_vector(setA);
 
     std::getline(infile, line);
+    while (line == "")
+        std::getline(infile, line);
+
     ibuff = std::istringstream(line);
 
     parse_csv(setB, ibuff);
-    output_vector(setB);
-    
-
+    output_vector(setB);    
     infile.close();
 
+    // READ IN DCD ?
+
+    DBROLI001::serial serialSolver;
     
     return 0;
 }
