@@ -10,8 +10,8 @@ serial::~serial(){
     // destrutor
 }
 
-std::vector<std::pair<double, std::pair<int,int>>> serial::findDistancesBetweenPoints(auto & setA, auto & setB, auto & atoms){
+void serial::findDistancesBetweenPoints(auto & setA, auto & setB, auto & atoms, auto & pq){
     // std::cout << 
     auto fst = setA.size() > setB.size() ? setA : setB; 
-    
+
 }

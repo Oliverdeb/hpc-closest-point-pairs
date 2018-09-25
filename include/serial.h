@@ -7,7 +7,7 @@ namespace DBROLI001 {
 
     class serial {
         public:
-            std::vector<std::pair<double, std::pair<int,int>>> findDistancesBetweenPoints(auto & setA, auto & setB, auto & atoms);
+            void findDistancesBetweenPoints(auto & setA, auto & setB, auto & atoms, auto & pq);
             serial();
             ~serial();
     };
