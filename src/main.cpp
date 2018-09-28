@@ -5,6 +5,7 @@
 # include <fstream>
 # include <sstream>
 # include <queue> 
+# include <chemfiles.hpp>
 # include "string.h"
 # include "serial.h"
 # include "parallel_openmp.h"
@@ -88,17 +89,26 @@ int main(int argc, char *argv[])
 
     // READ IN DCD ?
 
-    DBROLI001::serial serialSolver;
-    auto comparator = [](double left, double right) { 
-        return left - right < 0;
-    };
-    std::priority_queue<double, std::vector<double>, decltype(comparator)> pq(comparator);
-    pq.push(10.0);
-    pq.push(1.0);
-    pq.push(2.0);
-    pq.push(3.0);
+    chemfiles::Trajectory file("example_pn3_10RU_751frames.dcd");
+    chemfiles::Frame frame = file.read();
+    std::cout << file.nsteps() << std::endl;
+    auto positions = frame.positions();
 
-    std::cout << pq.top() << std::endl;
+    for (auto & pos : positions)
+        std::cout << pos[0] << ", " <<  pos[1] << ", " << pos[2] << std::endl;
+
+
+    // DBROLI001::serial serialSolver;
+    // auto comparator = [](double left, double right) { 
+    //     return left - right < 0;
+    // };
+    // std::priority_queue<double, std::vector<double>, decltype(comparator)> pq(comparator);
+    // pq.push(10.0);
+    // pq.push(1.0);
+    // pq.push(2.0);
+    // pq.push(3.0);
+
+    // std::cout << pq.top() << std::endl;
 
     return 0;
 }

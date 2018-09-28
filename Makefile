@@ -2,11 +2,12 @@
 GCC=g++
 SRC=src/
 BINDIR=bin/
+CHEMDIR=chemfiles/
 INCLUDE=include/
-FLAGS=-std=c++14 -I$(INCLUDE) -o $(BINDIR)main -Wall
+FLAGS=-o $(BINDIR)main -std=c++14 -I$(INCLUDE) -I$(CHEMDIR)$(INCLUDE) -lchemfiles -L $(CHEMDIR)lib
 
 default: clean
-	$(GCC) $(FLAGS) $(SRC)*.cpp
+	$(GCC) $(SRC)*.cpp $(FLAGS) 
 
 clean: 
 	@ [ -e  $(BINDIR)main ] && rm  $(BINDIR)main || echo 'could not rm';
