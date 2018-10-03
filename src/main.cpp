@@ -103,8 +103,8 @@ int main(int argc, char *argv[])
     std::priority_queue<
         std::pair<double, std::pair<int,int>>,
         std::vector<std::pair<double, std::pair<int, int>>>,
-        decltype(serial::comparator)
-    > pq(serial::comparator);
+        DBROLI001::Comparator
+    > pq;
     serialSolver.hello(setA);
     serialSolver.findDistancesBetweenPoints(setA, setB, positions, pq);
 
@@ -114,7 +114,16 @@ int main(int argc, char *argv[])
     // pq.push(2.0);
     // pq.push(3.0);
 
-    // std::cout << pq.top() << std::endl;
+    std::cout << pq.top().first << std::endl;
+    pq.pop();
+    std::cout << pq.top().first << std::endl;
+    pq.pop();
+    pq.pop();
+    pq.pop();
+    pq.pop();
+    pq.pop();
+    std::cout << pq.top().first << std::endl;
+
 
     return 0;
 }

@@ -27,7 +27,7 @@ void serial::findDistancesBetweenPoints(
                 vint & setA,
                 vint & setB,
                 chemfiles::span<chemfiles::Vector3D> & atoms,
-                std::priority_queue<pairint, std::vector<pairint>> & pq){
+                std::priority_queue<pairint, std::vector<pairint>, DBROLI001::Comparator> & pq){
 
     auto dist = [](auto & fst, auto & snd) {
         return sqrt(
@@ -37,20 +37,20 @@ void serial::findDistancesBetweenPoints(
         );
     };
 
-    double tst[] = {1,2,3};
-    double tst2[] = {1,2,3};
 
 
-    // std::cout << dist(tst, tst2) << std::endl;
-
-
-    // for(typename std::vector<decltype(atoms.get(setA.get(0)))>::iterator fst = setA.begin(); fst != setA.end(); ++fst){
-    //     auto p1 = atoms.get(*fst);
-    //     for(typename std::vector<decltype(p1)>::iterator snd = setB.begin(); snd != setB.end(); ++snd){
-    //         auto p2 = atoms.get(*snd);
-    //         pq.insert(std::make_pair(dist(p1, p2), std::make_pair(*fst, *snd)));
-    //     }
-    // }
+    for(int & p1_index : setA){
+        auto p1 = atoms[p1_index];
+        for(int & p2_index : setB){
+            auto p2 = atoms[p2_index];
+            pq.push(
+                std::make_pair(
+                    dist(p1, p2),
+                    std::make_pair(p1_index, p2_index)
+                )
+            );
+        }
+    }
 
 
 }
