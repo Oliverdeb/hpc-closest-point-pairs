@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     std::istringstream ibuff(line);
     
     parse_csv(setA, ibuff);
-    output_vector(setA);
+    // output_vector(setA);
 
     std::getline(infile, line);
     while (line == "")
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
     ibuff = std::istringstream(line);
 
     parse_csv(setB, ibuff);
-    output_vector(setB);    
+    // output_vector(setB);    
     infile.close();
 
     // READ IN DCD ?
@@ -93,16 +93,22 @@ int main(int argc, char *argv[])
     chemfiles::Frame frame = file.read();
     std::cout << file.nsteps() << std::endl;
     auto positions = frame.positions();
+    std::cout << "hello this is testy" << std::endl;
+    // for (auto & pos : positions)
+        // std::cout << pos[0] << ", " <<  pos[1] << ", " << pos[2] << std::endl;
 
-    for (auto & pos : positions)
-        std::cout << pos[0] << ", " <<  pos[1] << ", " << pos[2] << std::endl;
 
+    DBROLI001::serial serialSolver;
+    
+    std::priority_queue<
+        std::pair<double, std::pair<int,int>>,
+        std::vector<std::pair<double, std::pair<int, int>>>,
+        decltype(serial::comparator)
+    > pq(serial::comparator);
+    serialSolver.hello(setA);
+    serialSolver.findDistancesBetweenPoints(setA, setB, positions, pq);
 
-    // DBROLI001::serial serialSolver;
-    // auto comparator = [](double left, double right) { 
-    //     return left - right < 0;
-    // };
-    // std::priority_queue<double, std::vector<double>, decltype(comparator)> pq(comparator);
+    // std::cout << pq.top() << std::endl;
     // pq.push(10.0);
     // pq.push(1.0);
     // pq.push(2.0);

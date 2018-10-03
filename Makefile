@@ -4,10 +4,10 @@ SRC=src/
 BINDIR=bin/
 CHEMDIR=chemfiles/
 INCLUDE=include/
-FLAGS=-o $(BINDIR)main -std=c++14 -I$(INCLUDE) -I$(CHEMDIR)$(INCLUDE) -lchemfiles -L $(CHEMDIR)lib
+FLAGS= -std=c++17 -ffast-math -I$(INCLUDE) -I$(CHEMDIR)$(INCLUDE) -lchemfiles -L $(CHEMDIR)lib
 
 default: clean
-	$(GCC) $(SRC)*.cpp $(FLAGS) 
+	$(GCC) $(SRC)*.cpp -o $(BINDIR)main $(FLAGS) 
 
 clean: 
 	@ [ -e  $(BINDIR)main ] && rm  $(BINDIR)main || echo 'could not rm';
