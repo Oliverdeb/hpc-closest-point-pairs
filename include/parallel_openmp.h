@@ -7,7 +7,12 @@ namespace DBROLI001 {
 
     class parallel_openmp {
         public:
-            std::vector<std::pair<double, std::pair<int,int>>> findDistancesBetweenPoints(auto & setA, auto & setB, auto & atoms);
+            std::vector<DBROLI001::pairint> findDistancesBetweenPoints(
+                vint & setA,
+                vint & setB,
+                chemfiles::span<chemfiles::Vector3D> & atoms,
+                std::priority_queue<pairint, std::vector<pairint>, DBROLI001::Comparator> & pq
+            );
             parallel_openmp();
             ~parallel_openmp();
     };

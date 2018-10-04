@@ -11,7 +11,7 @@
 # include "parallel_openmp.h"
 # include "parallel_mpi.h"
 
-void parse_csv(auto & set, auto & ibuff){
+void parse_csv(std::vector<int> & set, std::istringstream & ibuff){
     int i = 0;
     while (ibuff >> i){
         set.push_back(i);
@@ -28,7 +28,7 @@ void parse_csv(auto & set, auto & ibuff){
     }
 }
 
-void output_vector(auto & vec){
+void output_vector(std::vector<int> & vec){
     std::cout << "\n\nVector output:" << std::endl;
 
     for (auto & elem : vec)
@@ -101,10 +101,12 @@ int main(int argc, char *argv[])
     DBROLI001::serial serialSolver;
     
     std::priority_queue<
-        std::pair<double, std::pair<int,int>>,
-        std::vector<std::pair<double, std::pair<int, int>>>,
+        DBROLI001::pairint,
+        std::vector<DBROLI001::pairint>,
         DBROLI001::Comparator
     > pq;
+
+    
     serialSolver.hello(setA);
     serialSolver.findDistancesBetweenPoints(setA, setB, positions, pq);
 

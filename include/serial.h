@@ -14,10 +14,9 @@ namespace DBROLI001 {
     struct Comparator{
         bool operator()(const pairint& p1, const pairint& p2)
         {
-            return p1.first - p2.first < 0;
+            return p1.first - p2.first > 0;
         }
     };
-
     
     class serial {
         public:
@@ -25,7 +24,9 @@ namespace DBROLI001 {
                 vint & setA,
                 vint & setB,
                 chemfiles::span<chemfiles::Vector3D> & atoms,
-                std::priority_queue<pairint, std::vector<pairint>, Comparator> & pq);
+                std::priority_queue<pairint, std::vector<pairint>, Comparator> & pq
+            );
+            
             void hello(std::vector<int> setA);
             serial();
             ~serial();
