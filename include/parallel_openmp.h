@@ -1,17 +1,20 @@
 # ifndef PARALLEL_OPENMP_H
 # define PARALLEL_OPENMP_H
 
-# include <vector>
 
+# include <vector>
+# include <queue> 
+# include <chemfiles.hpp>
+# include "serial.h"
 namespace DBROLI001 {
 
     class parallel_openmp {
         public:
-            std::vector<DBROLI001::pairint> findDistancesBetweenPoints(
-                vint & setA,
-                vint & setB,
+            void findDistancesBetweenPoints(
+                DBROLI001::vint & setA,
+                DBROLI001::vint & setB,
                 chemfiles::span<chemfiles::Vector3D> & atoms,
-                std::priority_queue<pairint, std::vector<pairint>, DBROLI001::Comparator> & pq
+                DBROLI001::pqtype & pq
             );
             parallel_openmp();
             ~parallel_openmp();

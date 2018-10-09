@@ -8,7 +8,7 @@ FLAGS= -std=c++17 -ffast-math -I$(INCLUDE) -I$(CHEMDIR)$(INCLUDE) -lchemfiles -L
 OPENMP=-fopenmp
 
 INPUT_FILE=inp.txt
-OUTPUT_FILE=s
+OUTPUT_FILE=out.txt
 
 default: clean
 	$(GCC) $(SRC)*.cpp -o $(BINDIR)main $(FLAGS) 
