@@ -4,11 +4,11 @@ SRC=src/
 BINDIR=bin/
 CHEMDIR=chemfiles/
 INCLUDE=include/
-FLAGS= -std=c++17 -I$(INCLUDE) -I$(CHEMDIR)$(INCLUDE) -lchemfiles -L $(CHEMDIR)lib -Wall -Wextra -Ofast -ffast-math
+FLAGS= -std=c++17 -I$(INCLUDE) -I$(CHEMDIR)$(INCLUDE) -lchemfiles -L $(CHEMDIR)lib -Ofast -ffast-math #-Wall -Wextra
 OPENMP=-fopenmp
 
-# INPUT_FILE=inp.txt
-INPUT_FILE=example_input_file2.txt
+INPUT_FILE=inp.txt
+# INPUT_FILE=example_input_file2.txt
 OUTPUT_FILE=out.txt
 
 default: clean
@@ -20,7 +20,7 @@ openmp: clean
 runopenmp: openmp
 	time ./bin/main -i $(INPUT_FILE) -o $(OUTPUT_FILE) -thread 2 -openmp
 
-runserial: default
+runserial: openmp
 	time ./bin/main -i $(INPUT_FILE) -o $(OUTPUT_FILE) -thread 2 -serial
 
 clean: 

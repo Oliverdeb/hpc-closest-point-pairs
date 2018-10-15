@@ -45,24 +45,47 @@ void parallel_openmp::solveOpenMP(unsigned int K,
             std::stringstream & output,
             const vint & setA,
             const vint & setB,
-            chemfiles::Trajectory & file){  
-    int numthreads = 2;
-        // std::cout << "\rdoing " ;
+            // std::vector<chemfiles::Trajectory> & files,
+            chemfiles::Trajectory & file,
+            const unsigned int & num_threads){  
     
-    pqtype pqs[1];
+    int num_frames = file.nsteps();
+    pqtype pqs[num_frames];
     unsigned int i;
-    #pragma omp parallel for private(i)  shared(pqs, setA, setB, file)  
-    for(i = 0; i <1; ++i){
+    omp_set_num_threads(num_threads);
+    std::cout << "Running with " << num_threads << " threads" << std::endl;
+
+    int last_step[num_threads];
+    for (int i = 0; i < num_threads; ++i)
+        last_step[i] = 0;
+
+    #pragma omp parallel for private(i)  //shared(pqs)  
+    for(i = 0; i < num_frames; ++i){
+        const int & curr_thread_num = omp_get_thread_num();
+        // std::cout << "loopy" << std::endl;
         // std::cout << "\rdoing " << i ;
         auto pq = DBROLI001::pqtype();
 
+        // std::cout << "thread: "<< curr_thread_num << "\ttrying to read " << i << std::endl;
+        // std::cout << "thread: "<< curr_thread_num << "\tlast read was" <<last_step[curr_thread_num]<< " need to read " << i << std::endl;
         chemfiles::Frame frame;
-        #pragma omp critical                 
-        frame = file.read();        
+
+        // while (i > last_step[curr_thread_num] && i != last_step[curr_thread_num]) {
+        //     files[curr_thread_num].read(); 
+        //     last_step[curr_thread_num]++;
+        // }
+        // frame = files[curr_thread_num].read(); 
+        // last_step[curr_thread_num]++;
+        // std::cout << "thread: "<< curr_thread_num << "after" << std::endl;
+
+        #pragma omp critical     
+        frame = file.read();     
+           
     
         // std::cout << omp_get_thread_num() << "\t" << &frame << std::endl;
         parallel_openmp::findDistancesBetweenPoints(K, setA, setB, frame.positions(), pq);
         pqs[i] = pq;        
+        // std::cout << "loop end" << std::endl;
     }
     for (int i =0; i < sizeof(pqs)/sizeof(pqtype); ++i){
 

@@ -20,7 +20,9 @@ namespace DBROLI001 {
                 std::stringstream & output,
                 const vint & setA,
                 const vint & setB,
-                chemfiles::Trajectory & file);
+                // std::vector<chemfiles::Trajectory> & files,
+                chemfiles::Trajectory & file,
+                const unsigned int & num_threads);
             parallel_openmp();
             ~parallel_openmp();
     };

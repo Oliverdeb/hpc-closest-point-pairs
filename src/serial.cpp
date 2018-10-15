@@ -45,12 +45,12 @@ void serial::findDistancesBetweenPoints(int K,
 }
 
 void serial::solveSerial(unsigned int K, std::stringstream & output, const vint & setA, const vint & setB, chemfiles::Trajectory & file){
-    for(unsigned int i = 0; i < 1; ++i){
-        std::cout << "\rdoing " << i ;
+    for(unsigned int i = 0; i < file.nsteps() ; ++i){
+        // std::cout << "\rdoing " << i ;
         auto pq = DBROLI001::pqtype();
         chemfiles::Frame const & frame = file.read();
         // chemfiles::Frame const & frame2 = file.read();
-        std::cout << "\t" << &frame << std::endl;
+        // std::cout << "\t" << &frame << std::endl;
         // std::cout << "\t\t" << &frame2 << std::endl;
         findDistancesBetweenPoints(K, setA, setB, frame.positions(), pq);
 
