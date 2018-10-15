@@ -10,12 +10,17 @@ namespace DBROLI001 {
 
     class parallel_openmp {
         public:
-            void findDistancesBetweenPoints(
-                DBROLI001::vint & setA,
-                DBROLI001::vint & setB,
-                chemfiles::span<chemfiles::Vector3D> & atoms,
-                DBROLI001::pqtype & pq
-            );
+            void findDistancesBetweenPoints(int K,
+                const DBROLI001::vint & setA,
+                const DBROLI001::vint & setB,
+                const chemfiles::span<chemfiles::Vector3D> & atoms,
+                DBROLI001::pqtype & pq);
+
+            void solveOpenMP(unsigned int K,
+                std::stringstream & output,
+                const vint & setA,
+                const vint & setB,
+                chemfiles::Trajectory & file);
             parallel_openmp();
             ~parallel_openmp();
     };

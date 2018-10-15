@@ -10,6 +10,7 @@
 # include "serial.h"
 # include "parallel_openmp.h"
 # include "parallel_mpi.h"
+# include <omp.h>
 
 void parse_csv(std::vector<int> & set, std::istringstream & ibuff){
     int i = 0;
@@ -37,6 +38,7 @@ void output_vector(std::vector<int> & vec){
 
 void write_output_to_file(std::string & outfile, std::stringstream & output){
     std::ofstream out(outfile);
+    out.precision(15);
     out << output.rdbuf();
     out.close();
 }
@@ -46,11 +48,11 @@ int main(int argc, char *argv[])
 {
     std::string i_file = "";
     std::string o_file = "";
-    int K = 0;
+    unsigned int K = 0;
     std::vector<int> setA, setB;
 
     if (argc < 5){
-        std::cout << "Please specify input and output files:\nUsage: ./main -i in_file -o out_file" << std::endl;
+        std::cout << "Please specify input and output files:\nUsage: ./main -i in_file -o out_file -thread num_threads" << std::endl;
         exit(1);
     }
 
@@ -64,6 +66,18 @@ int main(int argc, char *argv[])
         o_file = argv[2];
     }
 
+    // for (int i =0; i < argc; ++i)
+    //     std::cout << i << argv[i] <<  strcmp(argv[i], "-thread") << std::endl;
+    
+    if (argc > 4 && strcmp(argv[5], "-thread") == 0){
+        int num_threads = std::stoi(argv[6]);
+        std::cout << "Number threads: " << num_threads << std::endl;
+        #if defined(_OPENMP)
+        omp_set_num_threads(num_threads);
+        #endif
+    }
+
+    
     std::ifstream infile(i_file);
 
     if (!infile){
@@ -73,7 +87,7 @@ int main(int argc, char *argv[])
 
     std::string dcdfile;
     infile >> dcdfile >> K >> std::ws;
-    std::cout << "dcd is "<< dcdfile << std::endl;
+    std::cout << "\nDCD is "<< dcdfile << std::endl;
     std::cout << "K is "<< K << std::endl;
 
     std::string line;
@@ -88,52 +102,30 @@ int main(int argc, char *argv[])
         std::getline(infile, line);
 
     ibuff = std::istringstream(line);
-
     parse_csv(setB, ibuff);
     // output_vector(setB);    
     infile.close();
-
-
+    std::cout << "Set A: " << *setA.begin() << '-' << *(setA.end() - 1) << std::endl;
+    std::cout << "Set B: " << *setB.begin() << '-' << *(setB.end() - 1) << std::endl << std::endl;
     chemfiles::Trajectory file("example_pn3_10RU_751frames.dcd");
     
-    // std::cout << file.nsteps() << std::endl;
-    // auto positions = frame.positions();
-    // std::cout << "first frame index 0" << positions[0][0] << ", " << positions[0][1] << ", " << positions[0][2] << std::endl;
-    // std::cout << "second frame index 0" << next[0][0] << ", " << next[0][1] << ", " << next[0][2] << std::endl;
-    // for (auto & pos : positions)
-        // std::cout << pos[0] << ", " <<  pos[1] << ", " << pos[2] << std::endl;
-
     DBROLI001::serial serialSolver;
     DBROLI001::parallel_openmp openmpSolver;
     
-    DBROLI001::pqtype pq;
-    // std::vector<std::string> output;
     std::stringstream output;
+    output.precision(15);
 
-    for(int i = 0; i < file.nsteps(); ++i){
-        std::cout << "doing " << i << std::endl;
-        pq = DBROLI001::pqtype();
-        chemfiles::Frame const & frame = file.read();
-        serialSolver.findDistancesBetweenPoints(setA, setB, frame.positions(), pq);
+    if (strcmp(argv[7], "-serial") == 0){
+        std::cout << "\n\nRunning serial version" << std::endl;
+        serialSolver.solveSerial(K, output, setA, setB, file);
 
-        for (int j = 0; j < K; ++j){
-            const auto & result = pq.top();
-            pq.pop();
-            output << i << ',' << result.second.first << ',' << result.second.second <<',' << result.first << std::endl;
-        }
-    }
+    }else if (strcmp(argv[7], "-openmp") == 0){
+        std::cout << "\n\nRunning OpenMP version" << std::endl;
+        openmpSolver.solveOpenMP(K, output, setA, setB, file);
+
+    } //else
+        // mpiSolver.solveMPI
+    
     write_output_to_file(o_file, output);
-
-    std::cout << pq.top().first << std::endl;
-    pq.pop();
-    std::cout << pq.top().first << std::endl;
-    // serial_pq.pop();serial_pq.pop();serial_pq.pop();serial_pq.pop();serial_pq.pop();
-    // std::cout << serial_pq.top().first << std::endl;
-
-    // DBROLI001::pqtype openmp_pq;
-    // openmpSolver.findDistancesBetweenPoints(setA, setB, positions, serial_pq);
-
-
-
     return 0;
 }
