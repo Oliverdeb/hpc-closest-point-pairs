@@ -2,7 +2,7 @@
 # include "serial.h"
 # include <cmath>
 # include <iostream>
-# include <sstream>
+# include <fstream>
 # include <utility>
 # include <queue> 
 # include <chemfiles.hpp>
@@ -32,7 +32,7 @@ void serial::findDistancesBetweenPoints(int K,
                 std::make_pair(p1_index, p2_index)
             );
 
-            // change to max heap
+            
             if (pq.size() < K){         
                 pq.push(pair);
             }else{
@@ -45,7 +45,7 @@ void serial::findDistancesBetweenPoints(int K,
     }
 }
 
-void serial::solveSerial(unsigned int K, std::stringstream & output, const vint & setA, const vint & setB, chemfiles::Trajectory & file){
+void serial::solveSerial(unsigned int K, std::ofstream & output, const vint & setA, const vint & setB, chemfiles::Trajectory & file){
     double start = omp_get_wtime();
     pqtype  pqs[file.nsteps()];
     for(unsigned int i = 0; i < file.nsteps() ; ++i){

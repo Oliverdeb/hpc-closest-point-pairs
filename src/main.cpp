@@ -36,12 +36,6 @@ void output_vector(std::vector<int> & vec){
         std::cout << elem << std::endl;
 }
 
-void write_output_to_file(std::string & outfile, std::stringstream & output){
-    std::ofstream out(outfile);
-    out.precision(15);
-    out << output.rdbuf();
-    out.close();
-}
 
 
 int main(int argc, char *argv[])
@@ -112,7 +106,7 @@ int main(int argc, char *argv[])
     DBROLI001::serial serialSolver;
     DBROLI001::parallel_openmp openmpSolver;
     
-    std::stringstream output;
+    std::ofstream output(o_file);
     output.precision(15);
     chemfiles::Trajectory file(dcdfile);
 
@@ -134,6 +128,5 @@ int main(int argc, char *argv[])
         
     }
     
-    write_output_to_file(o_file, output);
     return 0;
 }

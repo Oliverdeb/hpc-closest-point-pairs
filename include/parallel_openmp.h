@@ -17,7 +17,7 @@ namespace DBROLI001 {
                 DBROLI001::pqtype & pq);
 
             void solveOpenMP(unsigned int K,
-                std::stringstream & output,
+                std::ofstream & output,
                 const vint & setA,
                 const vint & setB,
                 // std::vector<chemfiles::Trajectory> & files,

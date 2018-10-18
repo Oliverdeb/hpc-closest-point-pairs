@@ -9,7 +9,7 @@ namespace DBROLI001 {
     class parallel_mpi {
         public:
             void solveMPI(unsigned int K,
-                std::stringstream & output,
+                std::ofstream & output,
                 const vint & setA,
                 const vint & setB,
                 // std::vector<chemfiles::Trajectory> & files,

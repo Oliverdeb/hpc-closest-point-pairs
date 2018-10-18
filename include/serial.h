@@ -39,7 +39,7 @@ namespace DBROLI001 {
                 pqtype & pq);
 
             void solveSerial(unsigned int K,
-                std::stringstream & output,
+                std::ofstream & output,
                 const vint & setA,
                 const vint & setB,
                 chemfiles::Trajectory & file);

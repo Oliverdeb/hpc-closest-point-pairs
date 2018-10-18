@@ -1,6 +1,6 @@
 
 # include "parallel_mpi.h"
-# include <sstream>
+# include <fstream>
 # include "serial.h"
 # include <mpi.h>
 
@@ -17,33 +17,46 @@ parallel_mpi::~parallel_mpi(){
 // send one frame ?
 // Only send K back.
 void solveMPI(unsigned int K,
-                std::stringstream & output,
+                std::ofstream & output,
                 const vint & setA,
                 const vint & setB,
                 // std::vector<chemfiles::Trajectory> & files,
                 chemfiles::Trajectory & file,
                 const unsigned int & num_threads){
+
+    MPI_Init(NULL, NULL);
+
+    // Get rank and the number of processes
+    int num_procs, proc_id;
+    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &proc_id);
+
+    double begin = MPI_Wtime();
     int num_frames = file.nsteps();
     pqtype pqs[num_frames];
     std::cout << "Running with " << num_threads << " threads" << std::endl;
 
     chemfiles::Frame frame;
-    double begin = omp_get_wtime();
 
-    
-
-    for(int i = 0; i < num_frames; ++i){
+    int timestep = 0;
+    while (timestep < file.nsteps()) {
         auto pq = DBROLI001::pqtype();
-
-        frame = file.read();     
+        // frame = file.read();     
+        if (proc_id == 0) { // hnad out work from master
+            for (int i = 0; i < num_procs; ++i){
+                MPI_Send(&file.read(), 1, chemfiles::Frame, 0, 1, MPI_COMM_WORLD);
+            }
+        }else{ // worker nodes, get to work!
+            
+        }
     
-        // std::cout << omp_get_thread_num() << "\t" << &frame << std::endl;
-        parallel_openmp::findDistancesBetweenPoints(K, setA, setB, frame.positions(), pq);
+        serial::findDistancesBetweenPoints(K, setA, setB, frame.positions(), pq);
         pqs[i] = pq;        
     }
+    MPI_Finalize();
+    std::cout << "Time taken: " << MPI_Wtime() - begin << std::endl;
 
-    std::cout << "Time taken: " << omp_get_wtime() - begin << std::endl;
-    for (int i =0; i < sizeof(pqs)/sizeof(pqtype); ++i){
+    for (int i =0; i < sizeof(pqs)/sizeof(pqtype); ++i){        
 
         auto & pq = pqs[i];
         std::vector<pairint> reversed;
@@ -60,5 +73,7 @@ void solveMPI(unsigned int K,
                 << std::endl;
         }
     }
+
+    
     //
 }
