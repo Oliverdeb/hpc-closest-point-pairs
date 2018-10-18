@@ -4,9 +4,10 @@
 # include <iostream>
 # include <sstream>
 # include <utility>
-
 # include <queue> 
 # include <chemfiles.hpp>
+# include <omp.h>
+
 using namespace DBROLI001;
 
 serial::serial(){
@@ -45,15 +46,22 @@ void serial::findDistancesBetweenPoints(int K,
 }
 
 void serial::solveSerial(unsigned int K, std::stringstream & output, const vint & setA, const vint & setB, chemfiles::Trajectory & file){
+    double start = omp_get_wtime();
+    pqtype  pqs[file.nsteps()];
     for(unsigned int i = 0; i < file.nsteps() ; ++i){
-        // std::cout << "\rdoing " << i ;
+        std::cout << "\rdoing " << i ;
         auto pq = DBROLI001::pqtype();
         chemfiles::Frame const & frame = file.read();
         // chemfiles::Frame const & frame2 = file.read();
         // std::cout << "\t" << &frame << std::endl;
         // std::cout << "\t\t" << &frame2 << std::endl;
         findDistancesBetweenPoints(K, setA, setB, frame.positions(), pq);
-
+        pqs[i] = pq;
+        
+    }
+    std::cout << "Time taken: " << omp_get_wtime() - start << std::endl;
+    for (int i = 0; i < sizeof(pqs)/sizeof(pqtype); ++i){
+        auto & pq = pqs[i];
         // vector to get priority queue output in reversed order
         std::vector<pairint> reversed;
 

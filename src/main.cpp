@@ -122,15 +122,17 @@ int main(int argc, char *argv[])
         serialSolver.solveSerial(K, output, setA, setB, file);
 
     }else if (strcmp(argv[7], "-openmp") == 0){
-        std::cout << "\n\nRunning OpenMP version" << std::endl;
         // std::vector<chemfiles::Trajectory> files;
         // for (int i = 0; i < num_threads; ++i)
         //     files.push_back(chemfiles::Trajectory(dcdfile));
 
+        std::cout << "\n\nRunning OpenMP version" << std::endl;
         openmpSolver.solveOpenMP(K, output, setA, setB, file, num_threads);
 
-    } //else
+    } else {
         // mpiSolver.solveMPI
+        
+    }
     
     write_output_to_file(o_file, output);
     return 0;

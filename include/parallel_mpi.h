@@ -2,12 +2,20 @@
 # define PARALLEL_MPI_H
 
 # include <vector>
+# include "serial.h"
 
 namespace DBROLI001 {
 
     class parallel_mpi {
         public:
-            std::vector<std::pair<double, std::pair<int,int>>> findDistancesBetweenPoints(auto & setA, auto & setB, auto & atoms);
+            void solveMPI(unsigned int K,
+                std::stringstream & output,
+                const vint & setA,
+                const vint & setB,
+                // std::vector<chemfiles::Trajectory> & files,
+                chemfiles::Trajectory & file,
+                const unsigned int & num_threads);
+                
             parallel_mpi();
             ~parallel_mpi();
     };
