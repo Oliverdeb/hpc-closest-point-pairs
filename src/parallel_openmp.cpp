@@ -1,6 +1,6 @@
 
 # include "parallel_openmp.h"
-# include "serial.h"
+// # include "serial.h"
 # include <omp.h>
 # include <fstream>
 using namespace DBROLI001;
@@ -20,11 +20,11 @@ void parallel_openmp::findDistancesBetweenPoints(int K,
 
     
     for(const int & p1_index : setA){
-        auto & p1 = atoms[p1_index];
+        const chemfiles::Vector3D & p1 = atoms[p1_index];
         for(const int & p2_index : setB){
-            auto & p2 = atoms[p2_index];
+            const chemfiles::Vector3D & p2 = atoms[p2_index];
             auto pair = std::make_pair(
-                dist(p1, p2),
+                DBROLI001::dist(p1, p2),
                 std::make_pair(p1_index, p2_index)
             );
             
@@ -80,7 +80,7 @@ void parallel_openmp::solveOpenMP(unsigned int K,
         // last_step[curr_thread_num]++;
         #pragma omp critical
         {
-            std::cout << "thread: "<< curr_thread_num << " i: " << i << " sequential index " << sequential_index << std::endl;
+            // std::cout << "thread: "<< curr_thread_num << " i: " << i << " sequential index " << sequential_index << std::endl;
             frame = file.read();     
             my_index = sequential_index;
             sequential_index++;
@@ -94,7 +94,6 @@ void parallel_openmp::solveOpenMP(unsigned int K,
     }
     std::cout << std::endl << "Time taken: " << omp_get_wtime() - begin << std::endl;
     for (int i =0; i < sizeof(pqs)/sizeof(pqtype); ++i){
-        std::cout << "1got here" << std::endl;
 
         auto & pq = pqs[i];
         std::vector<pairint> reversed;
@@ -102,7 +101,6 @@ void parallel_openmp::solveOpenMP(unsigned int K,
             reversed.push_back(pq.top());
             pq.pop();
         }
-        std::cout << "2got here" << std::endl;
         for (int j = K-1; j >= 0; --j){            
             const auto & result = reversed[j];            
             output << i << ',' 

@@ -6,16 +6,18 @@
 # include <chemfiles.hpp>
 # include <cmath> 
 # include <iostream>
+# include <iomanip>
 
 namespace DBROLI001 {
+
+    // extern double dist(const chemfiles::Vector3D & fst,  const chemfiles::Vector3D & snd);
     auto dist = [](auto & fst, auto & snd) -> double {
         return std::sqrt(
             std::pow((fst[0] - snd[0]), 2) +
             std::pow((fst[1] - snd[1]), 2) +
             std::pow((fst[2] - snd[2]), 2)
-        );        
-    };    
-
+        );
+    };
     typedef std::vector<int> vint;
     typedef std::pair<int,int> intpair;
     typedef std::pair<double, intpair> pairint;
@@ -28,7 +30,6 @@ namespace DBROLI001 {
         }
     };
     typedef std::priority_queue<pairint, std::vector<pairint>, Comparator> pqtype;
-    
     
     class serial {
         public:
@@ -44,6 +45,22 @@ namespace DBROLI001 {
                 const vint & setB,
                 chemfiles::Trajectory & file);
             
+            void brute_force_for_mpi(unsigned int K,
+                unsigned int start,
+                unsigned int end,
+                std::stringstream & output,
+                const vint & setA,
+                const vint & setB,
+                chemfiles::Trajectory & file);
+
+            void brute_force_for_mpi(unsigned int K,
+                unsigned int start,
+                unsigned int end,
+                std::ofstream & output,
+                const vint & setA,
+                const vint & setB,
+                chemfiles::Trajectory & file);
+
             serial();
             ~serial();
     };

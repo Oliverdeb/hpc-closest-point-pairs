@@ -7,12 +7,14 @@
 # include <queue> 
 # include <chemfiles.hpp>
 # include "string.h"
-# include "serial.h"
+// # include "serial.h"
 # include "parallel_openmp.h"
 # include "parallel_mpi.h"
 # include <omp.h>
-
-void parse_csv(std::vector<int> & set, std::istringstream & ibuff){
+namespace DBROLI001 {
+    void parse_csv(std::vector<int> & set, std::istringstream & ibuff);
+}
+void DBROLI001::parse_csv(std::vector<int> & set, std::istringstream & ibuff){
     int i = 0;
     while (ibuff >> i){
         set.push_back(i);
@@ -88,7 +90,7 @@ int main(int argc, char *argv[])
     std::getline(infile, line);
     std::istringstream ibuff(line);
     
-    parse_csv(setA, ibuff);
+    DBROLI001::parse_csv(setA, ibuff);
     // output_vector(setA);
 
     std::getline(infile, line);
@@ -96,21 +98,19 @@ int main(int argc, char *argv[])
         std::getline(infile, line);
 
     ibuff = std::istringstream(line);
-    parse_csv(setB, ibuff);
+    DBROLI001::parse_csv(setB, ibuff);
     // output_vector(setB);    
     infile.close();
     std::cout << "Set A: " << *setA.begin() << '-' << *(setA.end() - 1) << std::endl;
     std::cout << "Set B: " << *setB.begin() << '-' << *(setB.end() - 1) << std::endl << std::endl;
     
     
-    DBROLI001::serial serialSolver;
-    DBROLI001::parallel_openmp openmpSolver;
-    
     std::ofstream output(o_file);
-    output.precision(15);
+    // output.precision(15);
     chemfiles::Trajectory file(dcdfile);
 
     if (strcmp(argv[7], "-serial") == 0){
+        DBROLI001::serial serialSolver;
         // chemfiles::Trajectory file(dcdfile);
         std::cout << "\n\nRunning serial version" << std::endl;
         serialSolver.solveSerial(K, output, setA, setB, file);
@@ -120,11 +120,14 @@ int main(int argc, char *argv[])
         // for (int i = 0; i < num_threads; ++i)
         //     files.push_back(chemfiles::Trajectory(dcdfile));
 
+        DBROLI001::parallel_openmp openmpSolver;
         std::cout << "\n\nRunning OpenMP version" << std::endl;
         openmpSolver.solveOpenMP(K, output, setA, setB, file, num_threads);
 
     } else {
-        // mpiSolver.solveMPI
+        DBROLI001::parallel_mpi mpiSolver;
+        std::cout << "\n\nRunning MPI version" << std::endl;
+        mpiSolver.solveMPI(K, output, setA, setB, file, num_threads);
         
     }
     
