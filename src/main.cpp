@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     // for (int i =0; i < argc; ++i)
     //     std::cout << i << argv[i] <<  strcmp(argv[i], "-thread") << std::endl;
     int num_threads = 2;
-    if (argc > 4 && strcmp(argv[5], "-thread") == 0){
+    if (argc > 5 && strcmp(argv[5], "-thread") == 0){
         num_threads = std::stoi(argv[6]);
         std::cout << "Number threads: " << num_threads << std::endl;
         #if defined(_OPENMP)
@@ -105,17 +105,20 @@ int main(int argc, char *argv[])
     std::cout << "Set B: " << *setB.begin() << '-' << *(setB.end() - 1) << std::endl << std::endl;
     
     
-    std::ofstream output(o_file);
     // output.precision(15);
     chemfiles::Trajectory file(dcdfile);
 
     if (strcmp(argv[7], "-serial") == 0){
+        std::ofstream output("Serial_" + o_file);
+
         DBROLI001::serial serialSolver;
         // chemfiles::Trajectory file(dcdfile);
         std::cout << "\n\nRunning serial version" << std::endl;
         serialSolver.solveSerial(K, output, setA, setB, file);
 
     }else if (strcmp(argv[7], "-openmp") == 0){
+        std::ofstream output("openmp_" + o_file);
+
         // std::vector<chemfiles::Trajectory> files;
         // for (int i = 0; i < num_threads; ++i)
         //     files.push_back(chemfiles::Trajectory(dcdfile));
@@ -126,6 +129,8 @@ int main(int argc, char *argv[])
 
     } else {
         DBROLI001::parallel_mpi mpiSolver;
+        std::ofstream output("MPI_" + o_file);
+
         std::cout << "\n\nRunning MPI version" << std::endl;
         mpiSolver.solveMPI(K, output, setA, setB, file, num_threads);
         

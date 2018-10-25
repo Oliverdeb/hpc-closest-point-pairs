@@ -166,12 +166,12 @@ public:
     }
 
     reference at(size_type index) {
-        assert(index < size());
+        // assert(index < size());
         return begin_[index];
     }
 
     const_reference at(size_type index) const {
-       assert(index < size());
+    //    assert(index < size());
        return begin_[index];
     }
 

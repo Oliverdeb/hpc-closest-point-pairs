@@ -1,5 +1,6 @@
 
 # include "parallel_mpi.h"
+# include "parallel_openmp.h"
 # include <chemfiles.hpp>
 # include <iostream>
 # include <string>
@@ -60,7 +61,7 @@ void parallel_mpi::solveMPI(unsigned int K,
     << std::endl;
 
     DBROLI001::serial serialSolver;
-
+    DBROLI001::parallel_openmp openmp;
     int each = num_frames / num_procs;
     int start = each * proc_id;        
     int end = start + each;
@@ -72,7 +73,8 @@ void parallel_mpi::solveMPI(unsigned int K,
         // for (int i = 1; i < num_procs; ++i)
             // MPI_Send(&dcdfile[0], dcdfile.size(), MPI_CHAR,    
         std::cout << "master"  << std::endl;
-        serialSolver.brute_force_for_mpi(K, start, end, output, setA, setB, file);
+        // serialSolver.brute_force_for_mpi(K, start, end, output, setA, setB, file);
+        openmp.openmp_for_mpi(K, start, end, output, setA, setB, file, num_threads);
         
         // get output from workers add to ofstream
         std::vector<std::string> outputs(num_procs);
@@ -93,8 +95,8 @@ void parallel_mpi::solveMPI(unsigned int K,
         std::cout << "outputting to file" << std::endl;
 
         for (std::string & s : outputs ){
-            std::cout << ">>>>>>>>>>>>>>outputting output to file" << std::endl;
-            std:: cout << s << std::endl;
+            // std::cout << ">>>>>>>>>>>>>>outputting output to file" << std::endl;
+            // std:: cout << s << std::endl;
             output << s;
         }
         
@@ -105,14 +107,17 @@ void parallel_mpi::solveMPI(unsigned int K,
         // piece of the file to read
         std::cout << "catching up to my start of " << start << std::endl;     
         double catch_up = MPI_Wtime();  
+        // file.skip(start);
         for (int i = 0; i < start; ++i){
-            std::cout<<"\rREADINJG   " << i;
+            // std::cout<<"\rREADINJG   " << i;
             file.read();
         }
-        std::cout << "--- CATCH up time: " << MPI_Wtime() - catch_up << std::endl;
+        std::cout << "--- start: " << start<< " CATCH up time: " << MPI_Wtime() - catch_up << std::endl;
 
         std ::cout << "caught up, end set at " << end << std::endl;
         std::stringstream out_stream;
+        // openmp.openmp_for_mpi(K, start, end, out_stream, setA, setB, file, num_threads);
+
         serialSolver.brute_force_for_mpi(K, start, end, out_stream, setA, setB, file);
         
         auto buffer = out_stream.str();

@@ -35,9 +35,9 @@ void serial::findDistancesBetweenPoints(int K,
                 pqtype & pq){
 
     for(const int & p1_index : setA){
-        const chemfiles::Vector3D & p1 = atoms[p1_index];
+        auto & p1 = atoms[p1_index];
         for(const int & p2_index : setB){
-            const chemfiles::Vector3D & p2 = atoms[p2_index];
+            auto & p2 = atoms[p2_index];
             auto pair = std::make_pair(
                 DBROLI001::dist(p1, p2),
                 std::make_pair(p1_index, p2_index)
@@ -99,7 +99,7 @@ void serial::solveSerial(unsigned int K, std::ofstream & output, const vint & se
 
         for (int j = K-1; j >= 0; --j){            
             const auto & result = reversed[j];
-            output << i << ',' << std::fixed << std::setprecision(15)
+            output << i << ',' << std::fixed << std::setprecision(6)
                 << result.second.first << ',' 
                 << result.second.second <<',' 
                 << result.first 
@@ -118,7 +118,7 @@ void serial::brute_force_for_mpi(unsigned int K,
 
     int num_steps = end - start;
     for(unsigned int i = start; i < end; ++i){
-        std::cout << "\rdoing " << i ;
+        // std::cout << "\rdoing " << i ;
         auto pq = DBROLI001::pqtype();
         chemfiles::Frame const & frame = file.read();
         serial::findDistancesBetweenPoints(K, setA, setB, frame.positions(), pq);
@@ -131,7 +131,7 @@ void serial::brute_force_for_mpi(unsigned int K,
 
         for (int j = K-1; j >= 0; --j){            
             const auto & result = reversed[j];
-            output << i << ',' << std::fixed << std::setprecision(15)
+            output << i << ',' << std::fixed << std::setprecision(6)
                 << result.second.first << ',' 
                 << result.second.second <<',' 
                 << result.first 
@@ -150,7 +150,7 @@ void serial::brute_force_for_mpi(unsigned int K,
 
     int num_steps = end - start;
     for(unsigned int i = start; i < end; ++i){
-        std::cout << "\rdoing " << i ;
+        // std::cout << "\rdoing " << i ;
         auto pq = DBROLI001::pqtype();
         chemfiles::Frame const & frame = file.read();
         serial::findDistancesBetweenPoints(K, setA, setB, frame.positions(), pq);
@@ -163,7 +163,7 @@ void serial::brute_force_for_mpi(unsigned int K,
 
         for (int j = K-1; j >= 0; --j){            
             const auto & result = reversed[j];
-            output << i << ',' << std::fixed << std::setprecision(15)
+            output << i << ','<< std::fixed << std::setprecision(6)
                 << result.second.first << ',' 
                 << result.second.second <<',' 
                 << result.first 
