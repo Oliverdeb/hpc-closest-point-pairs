@@ -137,7 +137,7 @@ void parallel_openmp::solveOpenMP(unsigned int K,
         // std::cout << "loop end" << std::endl;
     }
     std::cout << std::endl << "Time taken: " << omp_get_wtime() - begin << std::endl;
-    for (int i =0; i < sizeof(pqs)/sizeof(pqtype); ++i){
+    for (int i =0; i < num_frames; ++i){
 
         auto & pq = pqs[i];
         std::vector<pairint> reversed;
@@ -208,7 +208,7 @@ void parallel_openmp::openmp_for_mpi(unsigned int K,
         pqs[my_index] = pq;        
     }
     // std::cout << std::endl << "Time taken: " << omp_get_wtime() - begin << std::endl;
-    for (int i =0; i < sizeof(pqs)/sizeof(pqtype); ++i){
+    for (int i =0; i < num_frames; ++i){
 
         auto & pq = pqs[i];
         std::vector<pairint> reversed;
@@ -277,7 +277,7 @@ void parallel_openmp::openmp_for_mpi(unsigned int K,
         pqs[my_index] = pq;        
     }
     // std::cout << std::endl << "Time taken: " << omp_get_wtime() - begin << std::endl;
-    for (int i =0; i < sizeof(pqs)/sizeof(pqtype); ++i){
+    for (int i =0; i < num_frames; ++i){
 
         auto & pq = pqs[i];
         std::vector<pairint> reversed;

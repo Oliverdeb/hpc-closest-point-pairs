@@ -65,11 +65,11 @@ void serial::solveSerial(unsigned int K,
  const vint & setB,
  DCD_R & file){
     double start = omp_get_wtime();
-    int num_steps = file.getNFILE();
+    int num_frames = file.getNFILE();
     // int num_steps = 10;
-    std::cout << "detetected n frames: "  << num_steps << std::endl;
-    pqtype pqs[num_steps];
-    for(unsigned int i = 0; i < num_steps; ++i){
+    std::cout << "detetected n frames: "  << num_frames << std::endl;
+    pqtype pqs[num_frames];
+    for(unsigned int i = 0; i < num_frames; ++i){
         // std::cout << "\rdoing " << i ;
         auto pq = DBROLI001::pqtype();
         // chemfiles::Frame const & frame = file.getNFILE();
@@ -95,7 +95,7 @@ void serial::solveSerial(unsigned int K,
         
     }
     std::cout << "Time taken: " << omp_get_wtime() - start << std::endl;
-    for (int i = 0; i < sizeof(pqs)/sizeof(pqtype); ++i){
+    for (int i = 0; i < num_frames; ++i){
         auto & pq = pqs[i];
         // vector to get priority queue output in reversed order
         std::vector<pairint> reversed;
