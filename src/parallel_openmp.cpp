@@ -1,8 +1,10 @@
 
 # include "parallel_openmp.h"
 // # include "serial.h"
-# include <chemfiles.hpp>
-
+// # include <chemfiles.hpp>
+// #include "array_tools.hpp"
+// #include "dcd_r.hpp"
+# include <cmath> 
 # include <omp.h>
 # include <fstream>
 using namespace DBROLI001;
@@ -14,22 +16,28 @@ parallel_openmp::~parallel_openmp(){
     // destrutor
 }
 
-void parallel_openmp::findDistancesBetweenPoints(int K,
+void DBROLI001::findDistancesBetweenPoints(int K,
     const DBROLI001::vint & setA,
     const DBROLI001::vint & setB,
-    const chemfiles::span<chemfiles::Vector3D> & atoms,
+    DCD_R & file,
     DBROLI001::pqtype & pq){
 
-    // std::cout << "atom size " << atoms.size() << std::endl;
-    
-    for(const int & p1_index : setA){
+    const float * xs = file.getX();
+    const float * ys = file.getY();
+    const float * zs = file.getZ();
+        
+    for(const int & a_index : setA){
         // std::cout << "index"  << p1_index;
-        auto & p1 = atoms[p1_index];
-        for(const int & p2_index : setB){
-            auto & p2 = atoms[p2_index];
+        // auto & p1 = atoms[p1_index];
+        for(const int & b_index : setB){
+            // auto & p2 = atoms[p2_index];
             auto pair = std::make_pair(
-                DBROLI001::dist(p1, p2),
-                std::make_pair(p1_index, p2_index)
+                std::sqrt(
+                    std::pow(xs[a_index] - xs[b_index], 2) +
+                    std::pow(ys[a_index] - ys[b_index], 2) +
+                    std::pow(zs[a_index] - zs[b_index], 2)
+                ),
+                std::make_pair(a_index, b_index)
             );
             
             if (pq.size() < K){         
@@ -42,17 +50,49 @@ void parallel_openmp::findDistancesBetweenPoints(int K,
             }
         }
     }
-
 }
+
+void parallel_openmp::findDistancesBetweenPoints_directly(int K,
+                std::vector<std::vector<float>> as,
+                std::vector<std::vector<float>> bs,
+                DBROLI001::pqtype & pq){
+        
+    for(const std::vector<float> & p1 : as){
+        // std::cout << "index"  << p1_index;
+        // auto & p1 = atoms[p1_index];
+        for(const std::vector<float> & p2 : bs){
+            // auto & p2 = atoms[p2_index];
+            auto pair = std::make_pair(
+                std::sqrt(
+                    std::pow(p1[1] - p2[1], 2) +
+                    std::pow(p1[2] - p2[2], 2) +
+                    std::pow(p1[3] - p2[3], 2)
+                ),
+                std::make_pair(p1[0], p2[0])
+            );
+            
+            if (pq.size() < K){         
+                pq.push(pair);
+            }else{
+                if (pq.top().first > pair.first){
+                    pq.pop();
+                    pq.push(pair);           
+                }     
+            }
+        }
+    }
+}
+
+
 void parallel_openmp::solveOpenMP(unsigned int K,
             std::ofstream & output,
             const vint & setA,
             const vint & setB,
             // std::vector<chemfiles::Trajectory> & files,
-            chemfiles::Trajectory & file,
+            DCD_R & file,
             const unsigned int & num_threads){  
     
-    int num_frames = file.nsteps();
+    int num_frames = file.getNFILE();
     pqtype pqs[num_frames];
     unsigned int i;
     omp_set_num_threads(num_threads);
@@ -61,38 +101,38 @@ void parallel_openmp::solveOpenMP(unsigned int K,
     int last_step[num_threads];
     for (int i = 0; i < num_threads; ++i)
         last_step[i] = 0;
-    chemfiles::Frame frame;
+    // chemfiles::Frame frame;
     auto pq = DBROLI001::pqtype();
     double begin = omp_get_wtime();
     int sequential_index = 0, my_index;
+    std::vector<std::vector<float>> as;
+    std::vector<std::vector<float>> bs;
 
-    #pragma omp parallel for private(i, frame, pq, my_index)  shared(pqs, sequential_index)  
+    #pragma omp parallel for private(i, pq, my_index, as,  bs)  shared(pqs, sequential_index)  
     for(i = 0; i < num_frames; ++i){
         const int & curr_thread_num = omp_get_thread_num();
-        // std::cout << "loopy" << std::endl;
-        // std::cout << "\rdoing " << i ;
         
         pq = DBROLI001::pqtype();
-        // std::cout << "thread: "<< curr_thread_num << "\ttrying to read " << i << std::endl;
-        // std::cout << "thread: "<< curr_thread_num << "\tlast read was" <<last_step[curr_thread_num]<< " need to read " << i << std::endl;
-
-        // while (i > last_step[curr_thread_num] && i != last_step[curr_thread_num]) {
-        //     files[curr_thread_num].read(); 
-        //     last_step[curr_thread_num]++;
-        // }
-        // frame = files[curr_thread_num].read(); 
-        // last_step[curr_thread_num]++;
         #pragma omp critical
         {
-            // std::cout << "thread: "<< curr_thread_num << " i: " << i << " sequential index " << sequential_index << std::endl;
-            frame = file.read();     
+            file.read_oneFrame();
+            const float * xs = file.getX();
+            const float * ys = file.getY();
+            const float * zs = file.getZ();  
+            for (const int & index : setA)
+                as.push_back(std::vector<float>({(float)index, xs[index], ys[index], zs[index]}));
+
+            for (const int & index : setB)
+                bs.push_back(std::vector<float>({(float)index, xs[index], ys[index], zs[index]}));
+            
             my_index = sequential_index;
             sequential_index++;
         }
     
         // std::cout << omp_get_thread_num() << "\t" << &frame << std::endl;
-        parallel_openmp::findDistancesBetweenPoints(K, setA, setB, frame.positions(), pq);
-
+        parallel_openmp::findDistancesBetweenPoints_directly(K, as, bs, pq);
+        as.clear();
+        bs.clear();
         pqs[my_index] = pq;        
         // std::cout << "loop end" << std::endl;
     }
@@ -126,7 +166,7 @@ void parallel_openmp::openmp_for_mpi(unsigned int K,
             const vint & setA,
             const vint & setB,
             // std::vector<chemfiles::Trajectory> & files,
-            chemfiles::Trajectory & file,
+            DCD_R & file,
             const unsigned int & num_threads){  
     
     int num_frames = end - start;
@@ -135,12 +175,12 @@ void parallel_openmp::openmp_for_mpi(unsigned int K,
     omp_set_num_threads(num_threads);
     std::cout << "Running with " << num_threads << " threads" << std::endl;
 
-    chemfiles::Frame frame;
     auto pq = DBROLI001::pqtype();
     double begin = omp_get_wtime();
     int sequential_index = 0, my_index;
-
-    #pragma omp parallel for private(i, frame, pq, my_index)  shared(pqs, sequential_index)  
+    std::vector<std::vector<float>> as;
+    std::vector<std::vector<float>> bs;
+    #pragma omp parallel for private(i, as, bs, pq, my_index)  shared(pqs, sequential_index)  
     for(i = start; i < end; ++i){
         // const int & curr_thread_num = omp_get_thread_num();
         
@@ -148,12 +188,23 @@ void parallel_openmp::openmp_for_mpi(unsigned int K,
         #pragma omp critical
         {
             // std::cout << "thread: "<< curr_thread_num << " i: " << i << " sequential index " << sequential_index << std::endl;
-            frame = file.read();     
+            file.read_oneFrame();
+            const float * xs = file.getX();
+            const float * ys = file.getY();
+            const float * zs = file.getZ();  
+            for (const int & index : setA)
+                as.push_back(std::vector<float>({(float)index, xs[index], ys[index], zs[index]}));
+
+            for (const int & index : setB)
+                bs.push_back(std::vector<float>({(float)index, xs[index], ys[index], zs[index]}));
+            
             my_index = sequential_index;
             sequential_index++;
         }
     
-        parallel_openmp::findDistancesBetweenPoints(K, setA, setB, frame.positions(), pq);
+        parallel_openmp::findDistancesBetweenPoints_directly(K, as, bs, pq);
+        as.clear();
+        bs.clear();
         pqs[my_index] = pq;        
     }
     // std::cout << std::endl << "Time taken: " << omp_get_wtime() - begin << std::endl;
@@ -183,7 +234,7 @@ void parallel_openmp::openmp_for_mpi(unsigned int K,
             const vint & setA,
             const vint & setB,
             // std::vector<chemfiles::Trajectory> & files,
-            chemfiles::Trajectory & file,
+            DCD_R & file,
             const unsigned int & num_threads){  
     
     int num_frames = end - start;
@@ -192,12 +243,13 @@ void parallel_openmp::openmp_for_mpi(unsigned int K,
     omp_set_num_threads(num_threads);
     std::cout << "Running with " << num_threads << " threads" << std::endl;
 
-    chemfiles::Frame frame;
+    // chemfiles::Frame frame;
     auto pq = DBROLI001::pqtype();
     double begin = omp_get_wtime();
     int sequential_index = 0, my_index;
-
-    #pragma omp parallel for private(i, frame, pq, my_index)  shared(pqs, sequential_index)  
+    std::vector<std::vector<float>> as;
+    std::vector<std::vector<float>> bs;
+    #pragma omp parallel for private(i, as, bs, pq, my_index)  shared(pqs, sequential_index)  
     for(i = start; i < end; ++i){
         // const int & curr_thread_num = omp_get_thread_num();
         
@@ -205,12 +257,23 @@ void parallel_openmp::openmp_for_mpi(unsigned int K,
         #pragma omp critical
         {
             // std::cout << "thread: "<< curr_thread_num << " i: " << i << " sequential index " << sequential_index << std::endl;
-            frame = file.read();     
+            file.read_oneFrame();
+            const float * xs = file.getX();
+            const float * ys = file.getY();
+            const float * zs = file.getZ();  
+            for (const int & index : setA)
+                as.push_back(std::vector<float>({(float)index, xs[index], ys[index], zs[index]}));
+
+            for (const int & index : setB)
+                bs.push_back(std::vector<float>({(float)index, xs[index], ys[index], zs[index]}));
+            
             my_index = sequential_index;
             sequential_index++;
         }
     
-        parallel_openmp::findDistancesBetweenPoints(K, setA, setB, frame.positions(), pq);
+        parallel_openmp::findDistancesBetweenPoints_directly(K, as, bs, pq);
+        as.clear();
+        bs.clear();
         pqs[my_index] = pq;        
     }
     // std::cout << std::endl << "Time taken: " << omp_get_wtime() - begin << std::endl;

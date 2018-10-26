@@ -5,9 +5,11 @@
 # include <fstream>
 # include <sstream>
 # include <queue> 
-# include <chemfiles.hpp>
+// # include <chemfiles.hpp>
 # include "string.h"
 // # include "serial.h"
+#include "array_tools.hpp"
+#include "dcd_r.hpp"
 # include "parallel_openmp.h"
 # include "parallel_mpi.h"
 # include <omp.h>
@@ -107,7 +109,12 @@ int main(int argc, char *argv[])
     
     
     // output.precision(15);
-    chemfiles::Trajectory file(dcdfile);
+    // chemfiles::Trajectory file(dcdfile);
+    char arr[dcdfile.size()];
+    for (int i = 0; i < dcdfile.size(); ++i)
+        arr[i] = dcdfile[i];
+    DCD_R file(dcdfile.c_str());
+    file.read_header();
 
     if (strcmp(argv[7], "-serial") == 0){
         std::ofstream output("Serial_" + o_file);

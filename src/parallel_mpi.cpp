@@ -1,13 +1,15 @@
 
 # include "parallel_mpi.h"
 # include "parallel_openmp.h"
-# include <chemfiles.hpp>
+// # include <chemfiles.hpp>
 # include <iostream>
 # include <string>
 # include <vector>
 # include <queue>
 # include <sstream>
 # include <fstream>
+#include "array_tools.hpp"
+#include "dcd_r.hpp"
 // # include "serial.h"
 # include <mpi.h>
 using namespace DBROLI001;
@@ -44,9 +46,9 @@ void parallel_mpi::solveMPI(unsigned int K,
                 const vint & setA,
                 const vint & setB,
                 // std::vector<chemfiles::Trajectory> & files,
-                chemfiles::Trajectory & file,
+                DCD_R & file,
                 int num_threads){
-    int num_frames = file.nsteps();
+    int num_frames = file.getNFILE();
 
     MPI_Init(NULL, NULL);
     double begin = MPI_Wtime();
@@ -110,7 +112,7 @@ void parallel_mpi::solveMPI(unsigned int K,
         // file.skip(start);
         for (int i = 0; i < start; ++i){
             // std::cout<<"\rREADINJG   " << i;
-            file.read();
+            file.read_oneFrame();
         }
         std::cout << "--- start: " << start<< " CATCH up time: " << MPI_Wtime() - catch_up << std::endl;
 

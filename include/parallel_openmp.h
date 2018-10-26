@@ -4,21 +4,34 @@
 
 # include <vector>
 # include <queue> 
-# include <chemfiles.hpp>
+// # include <chemfiles.hpp>
+#include "array_tools.hpp"
+#include "dcd_r.hpp"
 # include "serial.h"
 namespace DBROLI001 {
+
+    extern void findDistancesBetweenPoints(int K,
+                const DBROLI001::vint & setA,
+                const DBROLI001::vint & setB,
+                DCD_R & file,
+                DBROLI001::pqtype & pq);
 
     class parallel_openmp {
         public:
         void nestedfindDistancesBetweenPoints(int K,
                 const DBROLI001::vint & setA,
                 const DBROLI001::vint & setB,
-                const chemfiles::span<chemfiles::Vector3D> & atoms,
+                DCD_R & file,
                 DBROLI001::pqtype & pq);
             void findDistancesBetweenPoints(int K,
                 const DBROLI001::vint & setA,
                 const DBROLI001::vint & setB,
-                const chemfiles::span<chemfiles::Vector3D> & atoms,
+                DCD_R & file,
+                DBROLI001::pqtype & pq);
+
+            void findDistancesBetweenPoints_directly(int K,
+                std::vector<std::vector<float>> as,
+                std::vector<std::vector<float>> bs,
                 DBROLI001::pqtype & pq);
 
             void solveOpenMP(unsigned int K,
@@ -26,7 +39,7 @@ namespace DBROLI001 {
                 const vint & setA,
                 const vint & setB,
                 // std::vector<chemfiles::Trajectory> & files,
-                chemfiles::Trajectory & file,
+                DCD_R & file,
                 const unsigned int & num_threads);
 
             void openmp_for_mpi(unsigned int K,
@@ -36,7 +49,7 @@ namespace DBROLI001 {
                 const vint & setA,
                 const vint & setB,
                 // std::vector<chemfiles::Trajectory> & files,
-                chemfiles::Trajectory & file,
+                DCD_R & file,
                 const unsigned int & num_threads);
 
             void openmp_for_mpi(unsigned int K,
@@ -46,7 +59,7 @@ namespace DBROLI001 {
                 const vint & setA,
                 const vint & setB,
                 // std::vector<chemfiles::Trajectory> & files,
-                chemfiles::Trajectory & file,
+                DCD_R & file,
                 const unsigned int & num_threads);
             parallel_openmp();
             ~parallel_openmp();

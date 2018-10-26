@@ -3,19 +3,20 @@
 
 # include <vector>
 # include <queue> 
-# include <chemfiles.hpp>
+// # include <chemfiles.hpp>
 # include <cmath> 
 # include <iostream>
 # include <iomanip>
-
+#include "array_tools.hpp"
+#include "dcd_r.hpp"
 namespace DBROLI001 {
 
     // extern double dist(const chemfiles::Vector3D & fst,  const chemfiles::Vector3D & snd);
-    auto dist = [](auto & fst, auto & snd) -> double {
+    auto dist = [](auto * xs, auto * ys, auto * zs, auto & a_index, auto & b_index) -> double {
         return std::sqrt(
-            std::pow((fst[0] - snd[0]), 2) +
-            std::pow((fst[1] - snd[1]), 2) +
-            std::pow((fst[2] - snd[2]), 2)
+            std::pow(xs[a_index] - xs[b_index], 2) +
+            std::pow(ys[a_index] - ys[b_index], 2) +
+            std::pow(zs[a_index] - zs[b_index], 2)
         );
     };
     typedef std::vector<int> vint;
@@ -33,17 +34,18 @@ namespace DBROLI001 {
     
     class serial {
         public:
-            void findDistancesBetweenPoints(int K,
-                const vint & setA,
-                const vint & setB,
-                const std::vector<chemfiles::Vector3D, std::allocator<chemfiles::Vector3D>> & atoms,
-                pqtype & pq);
+            // void findDistancesBetweenPoints(int K,
+            //     const vint & setA,
+            //     const vint & setB,
+            //     // const std::vector<chemfiles::Vector3D, std::allocator<chemfiles::Vector3D>> & atoms,
+            //     DCD_R & file
+            //     pqtype & pq);
 
             void solveSerial(unsigned int K,
                 std::ofstream & output,
                 const vint & setA,
                 const vint & setB,
-                chemfiles::Trajectory & file);
+                DCD_R & file);
             
             void brute_force_for_mpi(unsigned int K,
                 unsigned int start,
@@ -51,7 +53,7 @@ namespace DBROLI001 {
                 std::stringstream & output,
                 const vint & setA,
                 const vint & setB,
-                chemfiles::Trajectory & file);
+                DCD_R & file);
 
             void brute_force_for_mpi(unsigned int K,
                 unsigned int start,
@@ -59,7 +61,7 @@ namespace DBROLI001 {
                 std::ofstream & output,
                 const vint & setA,
                 const vint & setB,
-                chemfiles::Trajectory & file);
+                DCD_R & file);
 
             serial();
             ~serial();

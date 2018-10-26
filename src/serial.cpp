@@ -1,12 +1,15 @@
 
 # include "serial.h"
+# include "parallel_openmp.h"
 # include <cmath>
 # include <iostream>
 # include <fstream>
 # include <utility>
 # include <iomanip>
 # include <queue> 
-# include <chemfiles.hpp>
+// # include <chemfiles.hpp>
+#include "array_tools.hpp"
+#include "dcd_r.hpp"
 # include <omp.h>
 
 using namespace DBROLI001;
@@ -28,46 +31,51 @@ serial::~serial(){
 //         );  
 //     };
 
-void serial::findDistancesBetweenPoints(int K,
-                const vint & setA,
-                const vint & setB,
-                const std::vector<chemfiles::Vector3D, std::allocator<chemfiles::Vector3D>> & atoms,
-                pqtype & pq){
+// void serial::findDistancesBetweenPoints(int K,
+//                 const vint & setA,
+//                 const vint & setB,
+//                 const std::vector<chemfiles::Vector3D, std::allocator<chemfiles::Vector3D>> & atoms,
+//                 pqtype & pq){
 
-    for(const int & p1_index : setA){
-        auto & p1 = atoms[p1_index];
-        for(const int & p2_index : setB){
-            auto & p2 = atoms[p2_index];
-            auto pair = std::make_pair(
-                DBROLI001::dist(p1, p2),
-                std::make_pair(p1_index, p2_index)
-            );
+//     for(const int & p1_index : setA){
+//         auto & p1 = atoms[p1_index];
+//         for(const int & p2_index : setB){
+//             auto & p2 = atoms[p2_index];
+//             auto pair = std::make_pair(
+//                 DBROLI001::dist(p1, p2),
+//                 std::make_pair(p1_index, p2_index)
+//             );
 
             
-            if (pq.size() < K){         
-                pq.push(pair);
-            }else{
-                if (pq.top().first > pair.first){
-                    pq.pop();
-                    pq.push(pair);           
-                }     
-            }
-        }
-    }
-}
+//             if (pq.size() < K){         
+//                 pq.push(pair);
+//             }else{
+//                 if (pq.top().first > pair.first){
+//                     pq.pop();
+//                     pq.push(pair);           
+//                 }     
+//             }
+//         }
+//     }
+// }
 
-void serial::solveSerial(unsigned int K, std::ofstream & output, const vint & setA, const vint & setB, chemfiles::Trajectory & file){
+void serial::solveSerial(unsigned int K,
+ std::ofstream & output,
+ const vint & setA,
+ const vint & setB,
+ DCD_R & file){
     double start = omp_get_wtime();
-    int num_steps = file.nsteps();
+    int num_steps = file.getNFILE();
+    // int num_steps = 10;
+    std::cout << "detetected n frames: "  << num_steps << std::endl;
     pqtype pqs[num_steps];
     for(unsigned int i = 0; i < num_steps; ++i){
         // std::cout << "\rdoing " << i ;
         auto pq = DBROLI001::pqtype();
-        chemfiles::Frame const & frame = file.read();
-        // chemfiles::Frame const & frame2 = file.read();
-        // std::cout << "\t" << &frame << std::endl;
-        // std::cout << "\t\t" << &frame2 << std::endl;
-        findDistancesBetweenPoints(K, setA, setB, frame.positions(), pq);
+        // chemfiles::Frame const & frame = file.getNFILE();
+        file.read_oneFrame();
+        DBROLI001::findDistancesBetweenPoints(K, setA, setB, file, pq);
+
         pqs[i] = pq;
         //  std::vector<pairint> reversed;
 
@@ -114,14 +122,15 @@ void serial::brute_force_for_mpi(unsigned int K,
     std::stringstream & output,
     const vint & setA,
     const vint & setB,
-    chemfiles::Trajectory & file){
+    DCD_R & file){
 
     int num_steps = end - start;
     for(unsigned int i = start; i < end; ++i){
         // std::cout << "\rdoing " << i ;
         auto pq = DBROLI001::pqtype();
-        chemfiles::Frame const & frame = file.read();
-        serial::findDistancesBetweenPoints(K, setA, setB, frame.positions(), pq);
+        file.read_oneFrame();
+
+        DBROLI001::findDistancesBetweenPoints(K, setA, setB, file, pq);
          std::vector<pairint> reversed;
 
          for (int j = 0; j < K; ++j){
@@ -146,14 +155,14 @@ void serial::brute_force_for_mpi(unsigned int K,
     std::ofstream & output,
     const vint & setA,
     const vint & setB,
-    chemfiles::Trajectory & file){
+    DCD_R & file){
 
     int num_steps = end - start;
     for(unsigned int i = start; i < end; ++i){
         // std::cout << "\rdoing " << i ;
         auto pq = DBROLI001::pqtype();
-        chemfiles::Frame const & frame = file.read();
-        serial::findDistancesBetweenPoints(K, setA, setB, frame.positions(), pq);
+        file.read_oneFrame();
+        DBROLI001::findDistancesBetweenPoints(K, setA, setB, file, pq);
          std::vector<pairint> reversed;
 
          for (int j = 0; j < K; ++j){
