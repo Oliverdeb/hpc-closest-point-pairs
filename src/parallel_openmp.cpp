@@ -1,6 +1,8 @@
 
 # include "parallel_openmp.h"
 // # include "serial.h"
+# include <chemfiles.hpp>
+
 # include <omp.h>
 # include <fstream>
 using namespace DBROLI001;

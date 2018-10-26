@@ -97,8 +97,9 @@ int main(int argc, char *argv[])
     while (line == "")
         std::getline(infile, line);
 
-    ibuff = std::istringstream(line);
-    DBROLI001::parse_csv(setB, ibuff);
+    std::istringstream ibuff2(line);
+    // ibuff = std::istringstream(line);
+    DBROLI001::parse_csv(setB, ibuff2);
     // output_vector(setB);    
     infile.close();
     std::cout << "Set A: " << *setA.begin() << '-' << *(setA.end() - 1) << std::endl;
